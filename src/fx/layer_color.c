@@ -41,6 +41,11 @@ static const struct zmk_color_hsl layer_tint_colors[] = {
 /* All thumb LEDs (same chain indices on both halves). */
 static const uint8_t layer_tint_thumb_px[] = {5, 6, 7, 16, 17};
 
+/* The physical home-row LEDs map to these chain indices on both halves.
+ * In MO2, right-side keypad colors override purple where the functions
+ * occupy the same physical key positions. */
+static const uint8_t layer_tint_home_px[] = {2, 9, 14, 19, 24, 27};
+
 /* Arrow cluster in LOWER: I(UP) J(LEFT) K(DOWN) L(RIGHT).
  * Only exists on the right half (peripheral). */
 static const uint8_t layer_tint_arrow_px[] = {13, 9, 14, 19};
@@ -74,6 +79,15 @@ void zmk_rgb_fx_layer_color_apply(struct rgb_fx_pixel *pixels, size_t num_pixels
         }
     }
 
+    /* MO2: paint the complete physical home row purple on both halves. */
+    if (layer_tint == 2) {
+        for (size_t j = 0; j < ARRAY_SIZE(layer_tint_home_px); j++) {
+            if (layer_tint_home_px[j] < num_pixels) {
+                pixels[layer_tint_home_px[j]].value = rgb;
+            }
+        }
+    }
+
 #if IS_ENABLED(CONFIG_ZMK_SPLIT) && !IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
     /* In LOWER, light up the arrow cluster in orange. */
     if (layer_tint == 1) {
@@ -86,17 +100,16 @@ void zmk_rgb_fx_layer_color_apply(struct rgb_fx_pixel *pixels, size_t num_pixels
         }
     }
 
-    /* MO2 keypad LEDs for the supplied Studio layout:
-     * cyan = digits and decimal; orange = arithmetic operators. */
+    /* MO2 keypad positions for the supplied Studio layout. Cyan digits;
+     * orange arithmetic operators. These colors take precedence over the
+     * purple home-row tint when a keypad key occupies a home-row position. */
     if (layer_tint == 2) {
-        static const uint8_t numpad_px[] = {10, 13, 20, 9, 14, 19, 3, 8, 15, 18, 7};
-        static const uint8_t arithmetic_px[] = {22, 28, 24, 27, 25};
-        static const uint8_t modrow_px[] = {16}; /* right thumb RALT: keep the modifier purple */
+        static const uint8_t numpad_px[] = {10, 13, 20, 9, 14, 19, 3, 8, 15, 18};
+        static const uint8_t arithmetic_px[] = {22, 23, 24, 27, 25};
         struct zmk_color_rgb cyan =
             tint_to_rgb((struct zmk_color_hsl){.h = 180, .s = 100, .l = 50});
         struct zmk_color_rgb orange =
             tint_to_rgb((struct zmk_color_hsl){.h = 30, .s = 100, .l = 50});
-        struct zmk_color_rgb purple = tint_to_rgb(layer_tint_colors[2]);
 
         for (size_t i = 0; i < ARRAY_SIZE(numpad_px); i++) {
             if (numpad_px[i] < num_pixels) {
@@ -107,12 +120,6 @@ void zmk_rgb_fx_layer_color_apply(struct rgb_fx_pixel *pixels, size_t num_pixels
         for (size_t i = 0; i < ARRAY_SIZE(arithmetic_px); i++) {
             if (arithmetic_px[i] < num_pixels) {
                 pixels[arithmetic_px[i]].value = orange;
-            }
-        }
-
-        for (size_t i = 0; i < ARRAY_SIZE(modrow_px); i++) {
-            if (modrow_px[i] < num_pixels) {
-                pixels[modrow_px[i]].value = purple;
             }
         }
     }
