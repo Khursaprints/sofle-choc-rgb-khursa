@@ -222,7 +222,7 @@
                 /* row 3 */
                 &trans &kp K_UNDO &kp K_CUT &kp K_COPY &kp K_PASTE &trans &trans &rgbfx RGBFX_TOGGLE(0) &kp N0 &kp N1 &kp N2 &kp N3 &kp KP_SLASH &kp COMMA
                 /* thumbs */
-                &trans &trans &trans &trans &trans &trans &trans &kp KP_DOT &kp RALT &trans
+                &trans &trans &trans &trans &trans &trans &trans &trans &kp RALT &trans
             >;
             sensor-bindings = <&enc_l2 &enc_r2>;
         };
