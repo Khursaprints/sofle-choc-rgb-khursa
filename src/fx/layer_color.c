@@ -4,8 +4,8 @@
  * Per-layer tint: while LOWER (pink) or RAISE (purple) is active,
  * ALL thumb LEDs on both halves are painted with the warning color.
  * In LOWER the IJKL arrow cluster lights up in orange (that's where the
- * arrows live on this keymap). In RAISE the Bluetooth panel is shown
- * (BT_CLR red, profiles 0-4 yellow with the active one green).
+ * arrows live on this keymap). In RAISE the Bluetooth panel is shown on
+ * the central half, and the numpad/operators on the peripheral half.
  * Only the central half knows the layers, so the state is relayed to the
  * peripheral over the split behavior channel (behavior `rgblay`,
  * name <= 8 chars).
@@ -75,13 +75,37 @@ void zmk_rgb_fx_layer_color_apply(struct rgb_fx_pixel *pixels, size_t num_pixels
     }
 
 #if IS_ENABLED(CONFIG_ZMK_SPLIT) && !IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
-    /* In LOWER, light up the arrow cluster (right half only). */
+    /* In LOWER, light up the arrow cluster in orange. */
     if (layer_tint == 1) {
         struct zmk_color_rgb flechas = tint_to_rgb(layer_tint_arrow_color);
 
         for (size_t j = 0; j < ARRAY_SIZE(layer_tint_arrow_px); j++) {
             if (layer_tint_arrow_px[j] < num_pixels) {
                 pixels[layer_tint_arrow_px[j]].value = flechas;
+            }
+        }
+    }
+
+    /* RAISE: right-hand numpad keys in cyan, arithmetic operators in
+     * orange. Pixel indices correspond to the right-half key-pixels map:
+     * digits 0-9 and decimal = cyan; +, -, *, / and = = orange. */
+    if (layer_tint == 2) {
+        static const uint8_t numpad_px[] = {11, 12, 21, 10, 13, 20, 8, 15, 18, 6, 7};
+        static const uint8_t arithmetic_px[] = {24, 27, 25, 26, 16};
+        struct zmk_color_rgb cyan =
+            tint_to_rgb((struct zmk_color_hsl){.h = 180, .s = 100, .l = 50});
+        struct zmk_color_rgb orange =
+            tint_to_rgb((struct zmk_color_hsl){.h = 30, .s = 100, .l = 50});
+
+        for (size_t i = 0; i < ARRAY_SIZE(numpad_px); i++) {
+            if (numpad_px[i] < num_pixels) {
+                pixels[numpad_px[i]].value = cyan;
+            }
+        }
+
+        for (size_t i = 0; i < ARRAY_SIZE(arithmetic_px); i++) {
+            if (arithmetic_px[i] < num_pixels) {
+                pixels[arithmetic_px[i]].value = orange;
             }
         }
     }
