@@ -86,14 +86,12 @@ void zmk_rgb_fx_layer_color_apply(struct rgb_fx_pixel *pixels, size_t num_pixels
         }
     }
 
-    /* RAISE MO2 keypad positions from the supplied updated keymap:
-     * cyan: N7-N9, N4-N6, N1-N3, N0 and decimal; orange: +, -, *, /, =.
-     * Pixel numbers come from the right-half key-pixels table. The physical
-     * N0 and decimal positions map to pixels 6 and 7 respectively; equals
-     * is on pixel 16. */
+    /* RAISE MO2 keypad positions, using the supplied keymap and the
+     * right-half key-pixels table: cyan for digits and decimal; orange for
+     * +, -, *, /, and =. */
     if (layer_tint == 2) {
-        static const uint8_t numpad_px[] = {10, 13, 20, 9, 14, 19, 3, 8, 15, 6, 7};
-        static const uint8_t arithmetic_px[] = {22, 23, 24, 27, 16};
+        static const uint8_t numpad_px[] = {10, 13, 20, 9, 14, 19, 8, 15, 18, 3, 6, 7};
+        static const uint8_t arithmetic_px[] = {22, 23, 24, 27, 25, 26, 16};
         struct zmk_color_rgb cyan =
             tint_to_rgb((struct zmk_color_hsl){.h = 180, .s = 100, .l = 50});
         struct zmk_color_rgb orange =
