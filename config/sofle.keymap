@@ -135,7 +135,7 @@
                 &kp ESC &kp N1 &kp N2 &kp N3 &kp N4 &kp N5 &kp N6 &kp N7 &kp N8 &kp N9 &kp N0 &kp DEL
                 &kp TAB &kp Q &kp W &kp E &kp R &kp T &kp Y &kp U &kp I &kp O &kp P &kp LS(MINUS)
                 &kp LGUI &kp A &kp S &kp D &kp F &kp G &kp H &kp J &kp K &kp L &kp SEMI &kp KP_MULTIPLY
-                &kp LSHFT &kp Z &kp X &kp C &kp V &kp B &kp C_MUTE &kp C_PLAY &kp N &kp M &kp COMMA &kp DOT &kp FSLH &kp PSCR
+                &kp LSHFT &kp Z &kp X &kp C &kp V &kp B &kp C_MUTE &kp C_PLAY &kp N &kp M &kp COMMA &kp DOT &kp FSLH &kp PSCRN
                 &kp CAPS &kp LALT &mo 1 &kp LCTRL &kp SPACE &kp RET &kp BSPC &mo 2 &kp RALT &kp RSHFT
             >;
             sensor-bindings = <&enc_l0 &enc_r0>;
@@ -147,7 +147,7 @@
                 &trans &kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6 &kp F7 &kp F8 &kp F9 &kp F10 &kp F23
                 &kp GRAVE &kp F11 &kp F12 &kp RA(E) &rgbfx RGBFX_TOGGLE(0) &rgbfx RGBFX_NEXT(0) &trans &trans &kp UP &kp SQT &trans &kp F24
                 &trans &kp SEMI &kp LS(LBKT) &kp LS(RBKT) &rgbfx RGBFX_HUE_DOWN(0) &rgbfx RGBFX_HUE_UP(0) &trans &kp LEFT &kp DOWN &kp RIGHT &trans &kp HOME
-                &trans &studio_unlock &trans &trans &rgbfx RGBFX_DIM(0) &rgbfx RGBFX_BRIGHTEN(0) wpmview &oledanim &trans &trans &trans &trans &kp BSLH &kp END
+                &trans &studio_unlock &trans &trans &rgbfx RGBFX_DIM(0) &rgbfx RGBFX_BRIGHTEN(0) &wpmview &oledanim &trans &trans &trans &trans &kp BSLH &kp END
                 &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
             >;
             sensor-bindings = <&enc_l1 &enc_r1>;
