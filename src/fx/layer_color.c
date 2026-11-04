@@ -86,16 +86,17 @@ void zmk_rgb_fx_layer_color_apply(struct rgb_fx_pixel *pixels, size_t num_pixels
         }
     }
 
-    /* RAISE MO2 keypad positions, using the supplied keymap and the
-     * right-half key-pixels table: cyan for digits and decimal; orange for
-     * +, -, *, /, and =. */
+    /* MO2 keypad LEDs for the supplied Studio layout:
+     * cyan = digits and decimal; orange = arithmetic operators. */
     if (layer_tint == 2) {
-        static const uint8_t numpad_px[] = {10, 13, 20, 9, 14, 19, 8, 15, 18, 3, 6, 7};
-        static const uint8_t arithmetic_px[] = {22, 23, 24, 27, 25, 26, 16};
+        static const uint8_t numpad_px[] = {10, 13, 20, 9, 14, 19, 3, 8, 15, 18, 7};
+        static const uint8_t arithmetic_px[] = {22, 28, 24, 27, 25};
+        static const uint8_t modrow_px[] = {16}; /* right thumb RALT: keep the modifier purple */
         struct zmk_color_rgb cyan =
             tint_to_rgb((struct zmk_color_hsl){.h = 180, .s = 100, .l = 50});
         struct zmk_color_rgb orange =
             tint_to_rgb((struct zmk_color_hsl){.h = 30, .s = 100, .l = 50});
+        struct zmk_color_rgb purple = tint_to_rgb(layer_tint_colors[2]);
 
         for (size_t i = 0; i < ARRAY_SIZE(numpad_px); i++) {
             if (numpad_px[i] < num_pixels) {
@@ -106,6 +107,12 @@ void zmk_rgb_fx_layer_color_apply(struct rgb_fx_pixel *pixels, size_t num_pixels
         for (size_t i = 0; i < ARRAY_SIZE(arithmetic_px); i++) {
             if (arithmetic_px[i] < num_pixels) {
                 pixels[arithmetic_px[i]].value = orange;
+            }
+        }
+
+        for (size_t i = 0; i < ARRAY_SIZE(modrow_px); i++) {
+            if (modrow_px[i] < num_pixels) {
+                pixels[modrow_px[i]].value = purple;
             }
         }
     }
