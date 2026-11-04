@@ -9,39 +9,72 @@
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/ext_power.h>
 #include <dt-bindings/zmk/rgb_fx.h>
+/* Raton por teclado (&mmv/&mkp/&msc). Vienen de serie en ZMK con
+   CONFIG_ZMK_POINTING, que ya esta activo para la rueda del encoder. */
 #include <dt-bindings/zmk/pointing.h>
 
 / {
     behaviors {
+        // Cycles the right OLED animation (gem/cat/head/spaceman)
         oledanim: oledanim {
             compatible = "zmk,behavior-oled-anim";
             #binding-cells = <0>;
         };
+
+        // Internal central->peripheral relay: sets the animation by
+        // index. Not bound to any key; the ZMK Studio RPC handler calls
+        // it, the same way the RGB uses &rgbsync. Without it the web
+        // changed the animation only on the central half, which is not
+        // the one with the animated screen, so nothing happened.
         oledset: oledset {
             compatible = "zmk,behavior-oled-set";
             #binding-cells = <1>;
         };
+
+        // WPM view on the LEFT screen (bongo cat, luna, number,
+        // speedometer, graph). &wpmview cycles; &wpmset picks one by
+        // index and is what the ZMK Studio RPC uses.
         wpmview: wpmview {
             compatible = "zmk,behavior-wpm-view";
             #binding-cells = <0>;
         };
+
         wpmset: wpmset {
             compatible = "zmk,behavior-wpm-set";
             #binding-cells = <1>;
         };
+
+        // Internal central->peripheral relay for the deep sleep setting
+        // (enabled + minutes). Like &oledset, not bound to any key: the
+        // RPC handler invokes it. Needed because each half watches its
+        // own inactivity, so the setting has to reach both or the
+        // peripheral keeps the old delay.
         sleepcfg: sleepcfg {
             compatible = "zmk,behavior-sleep-cfg";
             #binding-cells = <2>;
         };
+
+        // Macros editables en caliente (CODEKEEB PATCH, ver
+        // src/behaviors/behavior_dynamic_macro.c). &dmac N reproduce la
+        // ranura N, cuyo contenido se escribe desde el editor web y vive
+        // en flash: sirve para ñ, tildes, un email, "→"... sin recompilar.
         dmac: dmac {
             compatible = "zmk,behavior-dynamic-macro";
             #binding-cells = <1>;
         };
+
+        // Discrete mouse wheel (CODEKEEB PATCH, see
+        // src/behaviors/behavior_mouse_wheel.c). One HID wheel tick per
+        // press: &mwheel 0 = up, 1 = down, 2 = left, 3 = right. Unlike
+        // ZMK's stock &msc this works when fired from an encoder.
         mwheel: mwheel {
             compatible = "zmk,behavior-mouse-wheel";
             #binding-cells = <1>;
         };
 
+        // Encoder rotation bindings are editable live from ZMK Studio.
+        // sensor-index: 0 = left encoder, 1 = right encoder.
+        // layer-id: 0 = Daily, 1 = MO1, 2 = MO2.
         enc_l0: enc_l0 {
             compatible = "zmk,behavior-sensor-rotate-dynamic";
             #sensor-binding-cells = <0>;
@@ -87,6 +120,58 @@
     };
 };
 
+/* IMPORTANT - DO NOT DELETE THIS BLOCK EVEN IF IT LOOKS "DUPLICATE":
+ * ZMK's sofle shield (>= v0.3) ships its own
+ * boards/nice_nano_v2.overlay with MOSI on P0.06 and chain 36, applied
+ * AFTER config/boards/nice_nano_v2.overlay, overriding it. The keymap is
+ * the last thing to enter the devicetree, so only from here can we
+ * enforce this variant's real pin (P0.08) and the 30-LED chain.
+ * (It happened once: deleted as "redundant" and the LEDs died for
+ * a full day of debugging. Verified by reading SPIM3's PSEL.MOSI
+ * live over USB logging.) */
+
+#include <dt-bindings/led/led.h>
+
+&pinctrl {
+    spi3_default: spi3_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_MOSI, 0, 8)>;
+        };
+    };
+
+    spi3_sleep: spi3_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_MOSI, 0, 8)>;
+            low-power-enable;
+        };
+    };
+};
+
+&spi3 {
+    compatible = "nordic,nrf-spim";
+    status = "okay";
+    pinctrl-0 = <&spi3_default>;
+    pinctrl-1 = <&spi3_sleep>;
+    pinctrl-names = "default", "sleep";
+
+    led_strip: ws2812@0 {
+        compatible = "worldsemi,ws2812-spi";
+        label = "WS2812";
+        reg = <0>;
+        spi-max-frequency = <4000000>;
+        chain-length = <30>;
+        spi-one-frame = <0x70>;
+        spi-zero-frame = <0x40>;
+        color-mapping = <LED_COLOR_ID_GREEN LED_COLOR_ID_RED LED_COLOR_ID_BLUE>;
+    };
+};
+
+/ {
+    chosen {
+        zmk,underglow = &led_strip;
+    };
+};
+
 / {
     keymap {
         compatible = "zmk,keymap";
@@ -127,4 +212,18 @@
             sensor-bindings = <&enc_l2 &enc_r2>;
         };
     };
+};
+
+/* CODEKEEB PATCH: one rotation event per physical detent (2 quadrature
+ * transitions per detent on this hardware). */
+&left_encoder {
+    steps = <60>;
+};
+
+&right_encoder {
+    steps = <60>;
+};
+
+&sensors {
+    triggers-per-rotation = <30>;
 };
