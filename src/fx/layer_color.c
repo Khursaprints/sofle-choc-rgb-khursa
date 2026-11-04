@@ -38,13 +38,8 @@ static const struct zmk_color_hsl layer_tint_colors[] = {
     {.h = 270, .s = 100, .l = 50},  /* RAISE = purple */
 };
 
-/* All thumb LEDs (same chain indices on both halves). */
+/* Modifier/thumb-row LEDs (same chain indices on both halves). */
 static const uint8_t layer_tint_thumb_px[] = {5, 6, 7, 16, 17};
-
-/* The physical home-row LEDs map to these chain indices on both halves.
- * In MO2, right-side keypad colors override purple where the functions
- * occupy the same physical key positions. */
-static const uint8_t layer_tint_home_px[] = {2, 9, 14, 19, 24, 27};
 
 /* Arrow cluster in LOWER: I(UP) J(LEFT) K(DOWN) L(RIGHT).
  * Only exists on the right half (peripheral). */
@@ -71,20 +66,10 @@ void zmk_rgb_fx_layer_color_apply(struct rgb_fx_pixel *pixels, size_t num_pixels
 
     struct zmk_color_rgb rgb = tint_to_rgb(layer_tint_colors[layer_tint]);
 
-    /* ALL thumbs on this half are painted with the layer color
-     * (LOWER pink / RAISE purple), on both halves. */
+    /* Modifier/thumb row: LOWER pink / RAISE (MO2) purple, on both halves. */
     for (size_t j = 0; j < ARRAY_SIZE(layer_tint_thumb_px); j++) {
         if (layer_tint_thumb_px[j] < num_pixels) {
             pixels[layer_tint_thumb_px[j]].value = rgb;
-        }
-    }
-
-    /* MO2: paint the complete physical home row purple on both halves. */
-    if (layer_tint == 2) {
-        for (size_t j = 0; j < ARRAY_SIZE(layer_tint_home_px); j++) {
-            if (layer_tint_home_px[j] < num_pixels) {
-                pixels[layer_tint_home_px[j]].value = rgb;
-            }
         }
     }
 
@@ -100,9 +85,7 @@ void zmk_rgb_fx_layer_color_apply(struct rgb_fx_pixel *pixels, size_t num_pixels
         }
     }
 
-    /* MO2 keypad positions for the supplied Studio layout. Cyan digits;
-     * orange arithmetic operators. These colors take precedence over the
-     * purple home-row tint when a keypad key occupies a home-row position. */
+    /* MO2 keypad positions: cyan for digits; orange for arithmetic. */
     if (layer_tint == 2) {
         static const uint8_t numpad_px[] = {10, 13, 20, 9, 14, 19, 3, 8, 15, 18};
         static const uint8_t arithmetic_px[] = {22, 23, 24, 27, 25};
