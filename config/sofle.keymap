@@ -9,121 +9,75 @@
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/ext_power.h>
 #include <dt-bindings/zmk/rgb_fx.h>
-/* Raton por teclado (&mmv/&mkp/&msc). Vienen de serie en ZMK con
-   CONFIG_ZMK_POINTING, que ya esta activo para la rueda del encoder. */
 #include <dt-bindings/zmk/pointing.h>
 
 / {
     behaviors {
-        // Cycles the right OLED animation (gem/cat/head/spaceman)
         oledanim: oledanim {
             compatible = "zmk,behavior-oled-anim";
             #binding-cells = <0>;
         };
-
-        // Internal central->peripheral relay: sets the animation by
-        // index. Not bound to any key; the ZMK Studio RPC handler calls
-        // it, the same way the RGB uses &rgbsync. Without it the web
-        // changed the animation only on the central half, which is not
-        // the one with the animated screen, so nothing happened.
         oledset: oledset {
             compatible = "zmk,behavior-oled-set";
             #binding-cells = <1>;
         };
-
-        // WPM view on the LEFT screen (bongo cat, luna, number,
-        // speedometer, graph). &wpmview cycles; &wpmset picks one by
-        // index and is what the ZMK Studio RPC uses.
         wpmview: wpmview {
             compatible = "zmk,behavior-wpm-view";
             #binding-cells = <0>;
         };
-
         wpmset: wpmset {
             compatible = "zmk,behavior-wpm-set";
             #binding-cells = <1>;
         };
-
-        // Internal central->peripheral relay for the deep sleep setting
-        // (enabled + minutes). Like &oledset, not bound to any key: the
-        // RPC handler invokes it. Needed because each half watches its
-        // own inactivity, so the setting has to reach both or the
-        // peripheral keeps the old delay.
         sleepcfg: sleepcfg {
             compatible = "zmk,behavior-sleep-cfg";
             #binding-cells = <2>;
         };
-
-        // Macros editables en caliente (CODEKEEB PATCH, ver
-        // src/behaviors/behavior_dynamic_macro.c). &dmac N reproduce la
-        // ranura N, cuyo contenido se escribe desde el editor web y vive
-        // en flash: sirve para ñ, tildes, un email, "→"... sin recompilar.
         dmac: dmac {
             compatible = "zmk,behavior-dynamic-macro";
             #binding-cells = <1>;
         };
-
-        // Discrete mouse wheel (CODEKEEB PATCH, see
-        // src/behaviors/behavior_mouse_wheel.c). One HID wheel tick per
-        // press: &mwheel 0 = up, 1 = down, 2 = left, 3 = right. Unlike
-        // ZMK's stock &msc this works when fired from an encoder.
         mwheel: mwheel {
             compatible = "zmk,behavior-mouse-wheel";
             #binding-cells = <1>;
         };
 
-        // Encoder rotation bindings below use zmk,behavior-sensor-rotate-dynamic
-        // (CODEKEEB PATCH, see src/behaviors/behavior_sensor_rotate_dynamic.c)
-        // instead of the stock zmk,behavior-sensor-rotate: same tap-dispatch
-        // mechanism, but the cw/ccw pair is readable and rewritable at
-        // runtime over ZMK Studio (persisted in flash), one instance per
-        // (layer, encoder) combination. `bindings` below is only the
-        // factory/default pair -- editing it live doesn't touch this file.
-        // sensor-index: 0 = left encoder, 1 = right encoder.
-        // layer-id: matches this keymap's declaration order (no layer
-        // reordering used), 0 = CODE, 1 = Lower, 2 = Raise.
-
-        enc_l0: enc_l0 { // CODE layer, left encoder: volume (factory)
+        enc_l0: enc_l0 {
             compatible = "zmk,behavior-sensor-rotate-dynamic";
             #sensor-binding-cells = <0>;
             sensor-index = <0>;
             layer-id = <0>;
             bindings = <&kp C_VOL_UP>, <&kp C_VOL_DN>;
         };
-
-        enc_r0: enc_r0 { // CODE layer, right encoder: mouse wheel (factory)
+        enc_r0: enc_r0 {
             compatible = "zmk,behavior-sensor-rotate-dynamic";
             #sensor-binding-cells = <0>;
             sensor-index = <1>;
             layer-id = <0>;
-            bindings = <&mwheel 0>, <&mwheel 1>;
+            bindings = <&kp UP>, <&kp DOWN>;
         };
-
-        enc_l1: enc_l1 { // Lower layer, left encoder: RGB mode (factory)
+        enc_l1: enc_l1 {
             compatible = "zmk,behavior-sensor-rotate-dynamic";
             #sensor-binding-cells = <0>;
             sensor-index = <0>;
             layer-id = <1>;
             bindings = <&rgbfx RGBFX_NEXT(0)>, <&rgbfx RGBFX_PREVIOUS(0)>;
         };
-
-        enc_r1: enc_r1 { // Lower layer, right encoder: RGB hue (factory)
+        enc_r1: enc_r1 {
             compatible = "zmk,behavior-sensor-rotate-dynamic";
             #sensor-binding-cells = <0>;
             sensor-index = <1>;
             layer-id = <1>;
             bindings = <&rgbfx RGBFX_HUE_UP(0)>, <&rgbfx RGBFX_HUE_DOWN(0)>;
         };
-
-        enc_l2: enc_l2 { // Raise layer, left encoder: RGB brightness (factory)
+        enc_l2: enc_l2 {
             compatible = "zmk,behavior-sensor-rotate-dynamic";
             #sensor-binding-cells = <0>;
             sensor-index = <0>;
             layer-id = <2>;
             bindings = <&rgbfx RGBFX_BRIGHTEN(0)>, <&rgbfx RGBFX_DIM(0)>;
         };
-
-        enc_r2: enc_r2 { // Raise layer, right encoder: RGB speed (factory)
+        enc_r2: enc_r2 {
             compatible = "zmk,behavior-sensor-rotate-dynamic";
             #sensor-binding-cells = <0>;
             sensor-index = <1>;
@@ -133,25 +87,14 @@
     };
 };
 
-/* IMPORTANT - DO NOT DELETE THIS BLOCK EVEN IF IT LOOKS "DUPLICATE":
- * ZMK's sofle shield (>= v0.3) ships its own
- * boards/nice_nano_v2.overlay with MOSI on P0.06 and chain 36, applied
- * AFTER config/boards/nice_nano_v2.overlay, overriding it. The keymap is
- * the last thing to enter the devicetree, so only from here can we
- * enforce this variant's real pin (P0.08) and the 30-LED chain.
- * (It happened once: deleted as "redundant" and the LEDs died for
- * a full day of debugging. Verified by reading SPIM3's PSEL.MOSI
- * live over USB logging.) */
-
+/* IMPORTANT: this keymap-level SPI3 pin/chain override is required for this
+ * board variant; the shield overlay otherwise selects the wrong MOSI pin. */
 #include <dt-bindings/led/led.h>
 
 &pinctrl {
     spi3_default: spi3_default {
-        group1 {
-            psels = <NRF_PSEL(SPIM_MOSI, 0, 8)>;
-        };
+        group1 { psels = <NRF_PSEL(SPIM_MOSI, 0, 8)>; };
     };
-
     spi3_sleep: spi3_sleep {
         group1 {
             psels = <NRF_PSEL(SPIM_MOSI, 0, 8)>;
@@ -163,130 +106,67 @@
 &spi3 {
     compatible = "nordic,nrf-spim";
     status = "okay";
-
     pinctrl-0 = <&spi3_default>;
     pinctrl-1 = <&spi3_sleep>;
     pinctrl-names = "default", "sleep";
-
     led_strip: ws2812@0 {
         compatible = "worldsemi,ws2812-spi";
         label = "WS2812";
-
-        /* SPI */
-        reg = <0>; /* ignored, but necessary for SPI bindings */
+        reg = <0>;
         spi-max-frequency = <4000000>;
-
-        /* WS2812: 30 per half (inner col 1-4, encoder LED 5th,
-         * thumbs and serpentine out to the pinky) */
         chain-length = <30>;
         spi-one-frame = <0x70>;
         spi-zero-frame = <0x40>;
-
         color-mapping = <LED_COLOR_ID_GREEN LED_COLOR_ID_RED LED_COLOR_ID_BLUE>;
     };
 };
 
 / {
-    chosen {
-        zmk,underglow = &led_strip;
-    };
+    chosen { zmk,underglow = &led_strip; };
 };
 
 / {
     keymap {
         compatible = "zmk,keymap";
 
-        default_layer {
-            display-name = "CODE";
-// ------------------------------------------------------------------------------------------------------------------
-// |  ESC  |  1  |  2  |  3   |  4   |  5   |                         |  6   |  7    |  8    |  9   |   0   |  DEL  |
-// |  TAB  |  Q  |  W  |  E   |  R   |  T   |                         |  Y   |  U    |  I    |  O   |   P   | BKSPC |
-// | SHIFT |  A  |  S  |  D   |  F   |  G   |                         |  H   |  J    |  K    |  L   |   ;   |   '   |
-// |  CTRL |  Z  |  X  |  C   |  V   |  B   |  MUTE  |        | PLAY  |  N   |  M    |  ,    |  .   |   /   | SHIFT |
-//               | GUI | ALT  | CTRL | LOWER|  SPACE |        | ENTER | RAISE| CTRL  | ALT   | GUI  |
+        layer_0 {
+            display-name = "Daily";
             bindings = <
-&kp ESC   &kp N1 &kp N2   &kp N3   &kp N4    &kp N5                              &kp N6 &kp N7    &kp N8    &kp N9   &kp N0   &kp DEL
-&kp TAB   &kp Q  &kp W    &kp E    &kp R     &kp T                               &kp Y  &kp U     &kp I     &kp O    &kp P    &kp BSPC
-&kp LSHFT &kp A  &kp S    &kp D    &kp F     &kp G                               &kp H  &kp J     &kp K     &kp L    &kp SEMI &kp SQT
-&kp LCTRL &kp Z  &kp X    &kp C    &kp V     &kp B  &kp C_MUTE       &kp C_PLAY  &kp N  &kp M     &kp COMMA &kp DOT  &kp FSLH &kp RSHFT
-                 &kp LGUI &kp LALT &kp LCTRL &mo 1  &kp SPACE        &kp RET     &mo 2  &kp RCTRL &kp RALT  &kp RGUI
+                &kp ESC &kp N1 &kp N2 &kp N3 &kp N4 &kp N5 &kp N6 &kp N7 &kp N8 &kp N9 &kp N0 &kp DEL
+                &kp TAB &kp Q &kp W &kp E &kp R &kp T &kp Y &kp U &kp I &kp O &kp P &kp LS(MINUS)
+                &kp LGUI &kp A &kp S &kp D &kp F &kp G &kp H &kp J &kp K &kp L &kp SEMI &kp KP_MULTIPLY
+                &kp LSHFT &kp Z &kp X &kp C &kp V &kp B &kp C_MUTE &kp C_PLAY &kp N &kp M &kp COMMA &kp DOT &kp FSLH &kp PSCR
+                &kp CAPS &kp LALT &mo 1 &kp LCTRL &kp SPACE &kp RET &kp BSPC &mo 2 &kp RALT &kp RSHFT
             >;
-
-            // Right encoder: real mouse wheel, one HID tick per detent
-            // (&mwheel). ZMK's stock &msc can NOT be used here: it only
-            // emits from its own delayed work loop and needs the press
-            // held across several cycles, while sensor-rotate fires a
-            // short tap -- USB logging confirmed zero reports at any
-            // tap-ms. behavior_mouse_wheel.c sends one complete wheel
-            // event per press instead, which is what a wheel detent
-            // actually is. Both slots stay editable live from ZMK Studio
-            // (see enc_l0/enc_r0 above).
             sensor-bindings = <&enc_l0 &enc_r0>;
         };
 
-        lower_layer {
-            display-name = "Lower";
-// TODO: Some binds are waiting for shifted keycode support.
-// ------------------------------------------------------------------------------------------------------------
-// |       | F1  | F2  |  F3  |  F4  |  F5  |                         |  F6  |   F7  |   F8  |  F9  |  F10  |  DEL  |
-// | `     | F11 | F12 |   €  | RGB  |modRGB|                         |      |       |   UP  |      |       | BKSPC |
-// |       |     |  {  |   }  | hue- | hue+ |                         |      | LEFT  |  DOWN | RIGHT|       |   |   |
-// |       |ZMKSt|     |      | Bri- | Bri+ |WPMview |        |OLEDanim|     |       |       |      |   \   |       |
-//               |     |      |      |      |  SPACE |        | ENTER |      |       |       |      |
+        layer_1 {
+            display-name = "MO1";
             bindings = <
-&trans     &kp F1         &kp F2       &kp F3       &kp F4                   &kp F5                                                         &kp F6     &kp F7     &kp F8           &kp F9     &kp F10    &kp DEL
-&kp GRAVE  &kp F11        &kp F12      &kp RA(E)    &rgbfx RGBFX_TOGGLE(0)   &rgbfx RGBFX_NEXT(0)                                           &trans     &trans     &kp UP           &trans     &trans     &kp BSPC
-&trans     &trans         &kp LBRC     &kp RBRC     &rgbfx RGBFX_HUE_DOWN(0) &rgbfx RGBFX_HUE_UP(0)                                         &trans     &kp LEFT   &kp DOWN         &kp RIGHT  &trans     &kp PIPE
-&trans     &studio_unlock &trans       &trans       &rgbfx RGBFX_DIM(0)      &rgbfx RGBFX_BRIGHTEN(0)  &wpmview                  &oledanim  &trans     &trans     &trans           &trans     &kp BSLH   &trans
-                           &trans       &trans       &trans                   &trans                    &trans                    &trans     &trans     &trans     &trans           &trans
+                &trans &kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6 &kp F7 &kp F8 &kp F9 &kp F10 &kp F23
+                &kp GRAVE &kp F11 &kp F12 &kp RA(E) &rgbfx RGBFX_TOGGLE(0) &rgbfx RGBFX_NEXT(0) &trans &trans &kp UP &kp SQT &trans &kp F24
+                &trans &kp SEMI &kp LS(LBKT) &kp LS(RBKT) &rgbfx RGBFX_HUE_DOWN(0) &rgbfx RGBFX_HUE_UP(0) &trans &kp LEFT &kp DOWN &kp RIGHT &trans &kp HOME
+                &trans &studio_unlock &trans &trans &rgbfx RGBFX_DIM(0) &rgbfx RGBFX_BRIGHTEN(0) wpmview &oledanim &trans &trans &trans &trans &kp BSLH &kp END
+                &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans
             >;
-
             sensor-bindings = <&enc_l1 &enc_r1>;
         };
 
-        raise_layer {
-            display-name = "Raise";
-// ------------------------------------------------------------------------------------------------------------
-// |BTCLR| BT1  |  BT2 |  BT3  |  BT4  |  BT5 |                       |      |   [  |    ]  |   (  |   )   |  DEL  |
-// |     |      | M↑   |       | scr↑  |      |                       | PGUP |   7  |    8  |   9  |   %   | BKSPC |
-// |     | M←   | M↓   |  M→   | scr↓  |      |                       | PGDN |   4  |    5  |   6  |   +   |   x   |
-// |     | UNDO | CUT  | COPY  | PASTE |      |       |        |  RGB |      |   1  |    2  |   3  |   -   |   /   |
-//              | LCLK | MCLK  | RCLK  |      | SPACE |        | ENTER|      |   0  |    .  |   =  |
+        layer_2 {
+            display-name = "MO2";
             bindings = <
-&bt BT_CLR &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4                        &trans    &kp LBKT  &kp RBKT &kp LPAR  &kp RPAR      &kp DEL
-&trans     &trans       &mmv MOVE_UP &trans       &msc SCRL_UP &trans                              &kp PG_UP &kp N7    &kp N8   &kp N9    &kp PRCNT     &kp BSPC
-&trans     &mmv MOVE_LEFT &mmv MOVE_DOWN &mmv MOVE_RIGHT &msc SCRL_DOWN &trans                     &kp PG_DN &kp N4    &kp N5   &kp N6    &kp KP_PLUS   &kp KP_MULTIPLY
-&trans     &kp K_UNDO   &kp K_CUT    &kp K_COPY   &kp K_PASTE  &trans  &trans   &rgbfx RGBFX_TOGGLE(0)  &kp N0   &kp N1    &kp N2        &kp N3        &kp KP_MINUS  &kp KP_SLASH
-                         &mkp LCLK    &mkp MCLK    &mkp RCLK    &trans  &trans   &trans           &kp N0    &kp KP_DOT &kp KP_EQUAL &trans
+                &bt BT_CLR &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4 &trans &kp LBKT &kp RBKT &kp LS(N0) &kp KP_PLUS &kp DEL
+                &trans &trans &trans &trans &trans &trans &kp PG_UP &kp N7 &kp N8 &kp N9 &kp KP_MINUS &kp BSPC
+                &trans &kp LBKT &trans &trans &trans &trans &kp PG_DN &kp N4 &kp N5 &kp N6 &kp KP_MULTIPLY &kp KP_MULTIPLY
+                &trans &kp K_UNDO &kp K_CUT &kp K_COPY &kp K_PASTE &trans &trans &rgbfx RGBFX_TOGGLE(0) &kp N0 &kp N1 &kp N2 &kp N3 &kp KP_SLASH &kp COMMA
+                &trans &trans &trans &trans &trans &trans &kp N0 &kp KP_DOT &kp RALT &trans
             >;
-
             sensor-bindings = <&enc_l2 &enc_r2>;
         };
     };
 };
-/* CODEKEEB PATCH: make every encoder detent fire one rotation event.
- *
- * These are generic 30-detent encoders, not the 20-detent Alps EC11 the
- * Sofle shield assumes (steps=80, triggers-per-rotation=20). What decides
- * when an event fires is the ratio steps/triggers-per-rotation, i.e. how
- * many quadrature pulses the driver wants per event: 80/20 asks for 4,
- * but a USB trace of the real hardware shows each detent produces exactly
- * 2 transitions (clean, no bounce, no invalid states), so one event only
- * landed every other click. 60/30 asks for 2 => one detent, one event.
- *
- * This lives in the keymap, NOT in config/sofle_left.overlay, because the
- * user overlay is processed BEFORE the shield's own sofle_left.overlay,
- * which then overwrites these properties right back to 80/20. The keymap
- * is applied after the shield, so it is the one that actually wins.
- * Verified in the generated devicetree, not just assumed. */
-&left_encoder {
-    steps = <60>;
-};
 
-&right_encoder {
-    steps = <60>;
-};
-
-&sensors {
-    triggers-per-rotation = <30>;
-};
+&left_encoder { steps = <60>; };
+&right_encoder { steps = <60>; };
+&sensors { triggers-per-rotation = <30>; };
