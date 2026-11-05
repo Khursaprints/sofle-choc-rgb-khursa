@@ -1,5 +1,9 @@
 # Sofle Choc Wireless RGB — ZMK firmware · CODE/KEEB
 
+> **Fair warning:** this fork is fully vibecoded. I do not have a clue what I'm doing whatsoever, but it seems like it works.
+>
+> Changes from the main repo: extended RGB on-time to ten minutes, used my own keymap, and added RGB lighting to the numpad layer.
+
 ZMK firmware for the CODE/KEEB **Sofle Choc wireless RGB**: nice!nano v2,
 vertical OLED displays, 30 RGB LEDs per half (29 per-key + 1 on the
 encoder), 2 rotary encoders and ZMK Studio.
@@ -231,7 +235,7 @@ blackout.
 | Symptom | Cause / fix |
 | --- | --- |
 | RGB/OLED keys only act on the left half | The split transport truncates the behavior name to **8 characters**. Behavior nodes must always be ≤8 (`rgbfx`, `rgblay`, `oledanim`). |
-| Halves "connected" but the right one doesn't type | Half-formed bond (log: `Link is not encrypted`). Re-pair with **every other workshop ZMK keyboard powered off** (foreign centrals hijack peripherals). |
+| Halves "connected" but the right one doesn't type | Half-formed bond (log: `Link is not encrypted`). Re-pair with **every other workshop ZMK keyboard powered off** (foreign centrals hijack peripheral connections). |
 | Dead LEDs with SPI apparently OK | Data pin overridden by the shield overlay (see note above) or rail with no power. Verify with the logging build (SPIM3 registers). |
 | Black RGB that doesn't respond to anything | Toxic persisted state (brightness 0 / off). It's now sanitized at boot; if needed, `settings_reset`. |
 | Build broken after creating a new repo | ZMK not pinned. Copy the `west.yml` from here. |
